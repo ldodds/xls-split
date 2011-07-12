@@ -1,0 +1,101 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require 'getoptlong'
+require "spreadsheet"
+require "csv"
+
+USAGE = <<-EOL
+SUMMARY
+
+xls-split [opts] file.xls 
+
+DESCRIPTION
+
+  Split a spreadsheet into separate CSV files, one file per worksheet.
+  
+  Makes it easier to process complex, multi-sheet spreadsheets in tools like Google Refine
+
+OPTIONS
+
+  --help            , -h
+    show this message
+  --verbose         , -v
+    verbose progress reporting
+  --encoding        , -e
+    set the encoding of the spreadsheet. Default is UTF-8
+  --skip            , -s
+    number of rows in each worksheet to skip before writing data
+  --dir             , -d
+    output directory into which CSV files will be written
+  --base            , -b
+    set a base file name for generated CSV files. Worksheet name will be appended
+  --match           , -m
+    regular expression used to match worksheet names. Only matches sheets will be split out
+  --tidy-names      , -t
+    tidy up worksheet names. Lower case and strips spaces    
+EOL
+
+opts = GetoptLong::new(
+         [ "--help"            , "-h" , GetoptLong::NO_ARGUMENT ],
+         [ "--encoding"        , "-e" , GetoptLong::REQUIRED_ARGUMENT ],
+         [ "--skip"            , "-s" , GetoptLong::REQUIRED_ARGUMENT ],
+         [ "--dir"             , "-d" , GetoptLong::REQUIRED_ARGUMENT ],
+         [ "--base"            , "-b" , GetoptLong::REQUIRED_ARGUMENT ],
+         [ "--match"           , "-m" , GetoptLong::REQUIRED_ARGUMENT ],
+         [ "--tidy"            , "-t" , GetoptLong::NO_ARGUMENT ],
+         [ "--verbose"         , "-v" , GetoptLong::NO_ARGUMENT ]
+       ).enum_for.inject({}) { |h, (k, v)| h.update k.delete('-') => v }
+
+if opts["help"]
+  USAGE.display
+  exit(0)
+end
+
+def log(opts, msg)
+  $stderr.puts msg if opts["verbose"]
+end
+   
+if opts["encoding"]
+  Spreadsheet.client_encoding = opts["encoding"]
+else
+  Spreadsheet.client_encoding = 'UTF-8'
+end
+
+log( opts, "Worksheet encoding set to #{Spreadsheet.client_encoding}" )
+  
+skip = opts["skip"].to_i || 0
+  
+log( opts, "Skipping #{skip} rows in each worksheet" )
+
+base = opts["base"] || ""
+dir = opts["dir"] || "."
+  
+book = Spreadsheet.open ARGV[0]
+
+book.worksheets.each do |worksheet|
+  
+  if opts["match"] == nil || worksheet.name.match( opts["match"] )
+    
+    name = worksheet.name
+    if opts["tidy"]
+      name = name.downcase.gsub(" ", "-")
+    end
+    filename = File.join( dir, "#{base}-#{name}.csv")
+    
+    log( opts, "Writing worksheet #{worksheet.name} to #{filename}" )
+    
+    CSV.open(filename, "w") do |writer|
+      
+      worksheet.each skip do |row|
+        writer << row
+      end
+      
+    end
+        
+  else
+    log( opts, "Ignoring unmatched worksheet: #{worksheet.name}" )
+  end
+  
+end 
+

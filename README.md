@@ -11,7 +11,7 @@ USAGE
 	xls-split [opts] [file]
  
 For example, if you have a spreadsheet containing two worksheets, Table1 and Table2 then the following 
-command will split that into two CSV files: Table1.csv and Table2.csv
+command will split that into two CSV files: /tmp/my-data-Table1.csv and /tmp/my-data-Table2.csv
  
  	xls-split -d /tmp -b my-data spreadsheet.xls  
  

@@ -40,6 +40,9 @@ OPTIONS
   --skip            , -s
     number of rows in each worksheet to skip before writing data
 
+  --skipfooter      , -f
+    number of rows to skip at the end of each worksheet 
+
   --dir             , -d
     output directory into which CSV files will be written
 

@@ -44,7 +44,8 @@ opts = GetoptLong::new(
          [ "--base"            , "-b" , GetoptLong::REQUIRED_ARGUMENT ],
          [ "--match"           , "-m" , GetoptLong::REQUIRED_ARGUMENT ],
          [ "--tidy"            , "-t" , GetoptLong::NO_ARGUMENT ],
-         [ "--verbose"         , "-v" , GetoptLong::NO_ARGUMENT ]
+         [ "--verbose"         , "-v" , GetoptLong::NO_ARGUMENT ],
+         [ "--skipfooter"      , "-f" , GetoptLong::REQUIRED_ARGUMENT ]
        ).enum_for.inject({}) { |h, (k, v)| h.update k.delete('-') => v }
 
 if opts["help"]
@@ -65,8 +66,10 @@ end
 log( opts, "Worksheet encoding set to #{Spreadsheet.client_encoding}" )
   
 skip = opts["skip"].to_i || 0
-  
+skipfooter = opts["skipfooter"].to_i || 0
+    
 log( opts, "Skipping #{skip} rows in each worksheet" )
+log( opts, "Skipping #{skipfooter} rows at end of each worksheet" )
 
 base = opts["base"] || ""
 dir = opts["dir"] || "."
@@ -84,11 +87,18 @@ book.worksheets.each do |worksheet|
     filename = File.join( dir, "#{base}-#{name}.csv")
     
     log( opts, "Writing worksheet #{worksheet.name} to #{filename}" )
+  
+    maxrow = worksheet.dimensions[1]
+    if skipfooter
+      maxrow = maxrow - skipfooter
+    end  
     
     CSV.open(filename, "w") do |writer|
       
       worksheet.each skip do |row|
-        writer << row
+        if row.idx <= maxrow
+          writer << row
+        end
       end
       
     end

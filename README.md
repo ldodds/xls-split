@@ -21,7 +21,11 @@ as well as the ability to only extract specific worksheets, based on a regex mat
 INSTALLATION
 ------------
 
-Grab the source from github and run:
+Install as a gem:
+
+	gem install xls-split
+	
+Or, grab the source from github and run:
 
 	rake install 	
   

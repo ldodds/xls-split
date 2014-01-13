@@ -9,7 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Leigh Dodds"]
   s.email       = ["leigh@ldodds.com"]
   s.homepage    = "http://github.com/ldodds/xls-split"
-  s.summary     = "Tools for splitting Excel files into CSV files"
+  s.summary     = "Extract worksheets from XLS files into CSV files"
+  s.description = "Tools for splitting Excel files into CSV files"
   s.files = Dir["{bin,lib}/**/*"] + ["LICENSE.md", "README.md"]
   s.executables << 'xls-split'
   
